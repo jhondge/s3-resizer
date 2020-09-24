@@ -4,7 +4,8 @@
 const AWS = require('aws-sdk');
 const S3 = new AWS.S3({signatureVersion: 'v4'});
 const Sharp = require('sharp');
-const PathPattern = /(.*\/)?(.*)\/(.*)/;
+// const PathPattern = /(.*\/)?(.*)\/(.*)/;
+const PathPattern = /(.*\/)?(.*)@(\d+)w_(\d+)h_1(l|e).src/;
 
 // parameters
 const {BUCKET, URL} = process.env;
@@ -14,15 +15,22 @@ const WHITELIST = process.env.WHITELIST
 
 
 exports.handler = async (event) => {
+    // @150w_150h_1e.src
+    //assets/bg/b0e9b163-9df7-4cb6-bc55-74c2a411b6ea.jpg@150w_150h_1e.src
+    // /@(\d+)w_(\d+)h_1l.src/.exec(url);
     const path = event.queryStringParameters.path;
+    console.log('resize path:', path);
     const parts = PathPattern.exec(path);
     const dir = parts[1] || '';
-    const resizeOption = parts[2];  // e.g. "150x150_max"
-    const sizeAndAction = resizeOption.split('_');
-    const filename = parts[3];
+    // const resizeOption = parts[];  // e.g. "150x150_max"
+    // const sizeAndAction = resizeOption.split('_');
+    const filename = parts[2];
 
-    const sizes = sizeAndAction[0].split("x");
-    const action = sizeAndAction.length > 1 ? sizeAndAction[1] : null;
+    const action = parts[5];
+    // const sizes = sizeAndAction[0].split("x");
+    const sizes = [parts[3], parts[4]];
+    
+    // const action = sizeAndAction.length > 1 ? sizeAndAction[1] : null;
 
     // Whitelist validation.
     if (WHITELIST && !WHITELIST.includes(resizeOption)) {
@@ -34,7 +42,7 @@ exports.handler = async (event) => {
     }
 
     // Action validation.
-    if (action && action !== 'max' && action !== 'min') {
+    if (action && action !== 'l' && action !== 's' && action !== 'e') {
         return {
             statusCode: 400,
             body: `Unknown func parameter "${action}"\n` +
@@ -52,10 +60,10 @@ exports.handler = async (event) => {
         const height = sizes[1] === 'AUTO' ? null : parseInt(sizes[1]);
         let fit;
         switch (action) {
-            case 'max':
+            case 'l':
                 fit = 'inside';
                 break;
-            case 'min':
+            case 's':
                 fit = 'outside';
                 break;
             default:
