@@ -89,10 +89,14 @@ exports.handler = async (event) => {
             Key: path,
             CacheControl: 'public, max-age=86400'
         }).promise();
-
+        if(path.indexOf('?ts=') !== -1) {
+            path = path.replace(/\?ts=[0-9]/, '?ts=' + Date.now());
+        } else {
+            path = path + '?ts=' + Date.now();
+        }
         return {
             statusCode: 301,
-            headers: {"Location" : `${URL}/${path}?ts=${Date.now()}`}
+            headers: {"Location" : `${URL}/${path}}`}
         };
     } catch (e) {
         return {
