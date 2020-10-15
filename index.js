@@ -1,3 +1,10 @@
+/*
+ * @Author: Jackson
+ * @Email: zhangjiajun@everimaging.com
+ * @Date: 2020-09-24 14:32:09
+ * @Description: 
+ * 
+ */
 'use strict'
 
 
@@ -85,7 +92,7 @@ exports.handler = async (event) => {
 
         return {
             statusCode: 301,
-            headers: {"Location" : `${URL}/${path}`}
+            headers: {"Location" : `${URL}/${path}?ts=${Date.now()}`}
         };
     } catch (e) {
         return {
