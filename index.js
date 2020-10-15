@@ -25,7 +25,7 @@ exports.handler = async (event) => {
     // @150w_150h_1e.src
     //assets/bg/b0e9b163-9df7-4cb6-bc55-74c2a411b6ea.jpg@150w_150h_1e.src
     // /@(\d+)w_(\d+)h_1l.src/.exec(url);
-    const path = event.queryStringParameters.path;
+    let path = event.queryStringParameters.path;
     console.log('resize path:', path);
     const parts = PathPattern.exec(path);
     const dir = parts[1] || '';
@@ -96,7 +96,10 @@ exports.handler = async (event) => {
         }
         return {
             statusCode: 301,
-            headers: {"Location" : `${URL}/${path}}`}
+            headers: {"Location" : `${URL}/${path}`, 
+            "Access-Control-Allow-Headers": "Authorization,Cross-flag,X-XSRF-TOKEN",
+            "Access-Control-Allow-Origin" : "*"
+            }
         };
     } catch (e) {
         return {
