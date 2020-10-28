@@ -62,7 +62,12 @@ exports.handler = async (event) => {
         const data = await S3
             .getObject({Bucket: BUCKET, Key: dir + filename})
             .promise();
-
+        if(!data || !data.Body) {
+            return {
+                statusCode: 404,
+                body: 'No Such Key exsits'
+            }
+        }
         const width = sizes[0] === 'AUTO' ? null : parseInt(sizes[0]);
         const height = sizes[1] === 'AUTO' ? null : parseInt(sizes[1]);
         let fit;
@@ -89,17 +94,15 @@ exports.handler = async (event) => {
             Key: path,
             CacheControl: 'public, max-age=86400'
         }).promise();
-        if(path.indexOf('?ts=') !== -1) {
-            path = path.replace(/\?ts=[0-9]/, '?ts=' + Date.now());
-        } else {
-            path = path + '?ts=' + Date.now();
-        }
+        let respData = result.toString('base64');
+        console.log('content type:', data.ContentType);
         return {
-            statusCode: 301,
-            headers: {"Location" : `${URL}/${path}`, 
-            "Access-Control-Allow-Headers": "Authorization,Cross-flag,X-XSRF-TOKEN",
-            "Access-Control-Allow-Origin" : "*"
-            }
+            statusCode: 200,
+            headers: {
+                'Content-type': data.ContentType
+            },
+            body: respData,
+            isBase64Encoded: true
         };
     } catch (e) {
         return {
